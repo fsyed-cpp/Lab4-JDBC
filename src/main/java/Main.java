@@ -2,6 +2,7 @@ package main.java;
 
 
 import java.sql.*;
+import java.util.Scanner;
 
 /**
  * My Database is called "School", so the table names are prefixed by 'school.'
@@ -16,10 +17,12 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         // #1
-        Main.displayTrips("Pomona", "Ontario", "7/16/2020");
+        // Ex: Pomona, Ontario, 7/16/2020
+        Main.displayTrips();
 
         // #2
-        Main.deleteTrip("11");
+        // Ex: Delete 11
+        Main.deleteTrip();
         Main.insertTripOffering();
         Main.changeDriverForTrip("Steve Bevi", "12", "7/18/2020", "6:00PM");
         Main.changeBusIdForTrip("7", "12", "7/18/2020", "6:00PM");
@@ -46,71 +49,104 @@ public class Main {
     // MARK: - Queries
 
     // #1
-    public static void displayTrips(String startLocation, String destination, String date) throws SQLException {
+    public static void displayTrips() throws SQLException {
 
         Connection con = getConnection();
+        Scanner scanner = new Scanner(System.in);
 
-        // #1
-        // Get all the trips for a given start location, destination and date
-        String query = "SELECT T1.StartLocationName, T1.DestinationName, T2.Date, T2.ScheduledStartTime, T2.ScheduledArrivalTime, T2.Drivername, T2.BusID\n" +
-                "FROM school.Trip T1, school.TripOffering T2\n" +
-                "WHERE T1.TripNumber = T2.TripNumber AND T1.StartLocationName = ? AND T1.DestinationName = ? AND T2.Date = ?";
+        boolean shouldRepeat = true;
+        while (shouldRepeat) {
 
-        // Sample test data
-        PreparedStatement stmt = con.prepareStatement(query);
-        stmt.setString(1, startLocation);
-        stmt.setString(2, destination);
-        stmt.setString(3, date);
+            System.out.print("Please enter a start location: ");
+            String startLocation = scanner.nextLine();
+            System.out.print("Please enter a destination: ");
+            String destination = scanner.nextLine();
+            System.out.print("Please enter a date: ");
+            String date = scanner.nextLine();
 
-        ResultSet resultSet = stmt.executeQuery();
+            // #1
+            // Get all the trips for a given start location, destination and date
+            String query = "SELECT T1.StartLocationName, T1.DestinationName, T2.Date, T2.ScheduledStartTime, T2.ScheduledArrivalTime, T2.Drivername, T2.BusID\n" +
+                    "FROM school.Trip T1, school.TripOffering T2\n" +
+                    "WHERE T1.TripNumber = T2.TripNumber AND T1.StartLocationName = ? AND T1.DestinationName = ? AND T2.Date = ?";
 
-        System.out.println("Displaying all trips that start at Pomona, end at Ontario, and started on 7/16/2020");
-        int tripNumber = 1;
-        while (resultSet.next()) {
+            // Sample test data
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, startLocation);
+            stmt.setString(2, destination);
+            stmt.setString(3, date);
 
-            System.out.println("Trip " + tripNumber);
+            ResultSet resultSet = stmt.executeQuery();
 
-            System.out.print("StartLocation: ");
-            System.out.print(resultSet.getString("StartLocationName"));
-            System.out.print(" ");
+            System.out.println("Displaying all trips that start at Pomona, end at Ontario, and started on 7/16/2020");
+            int tripNumber = 1;
+            while (resultSet.next()) {
 
-            System.out.print("DestinationName: ");
-            System.out.print(resultSet.getString("DestinationName"));
-            System.out.print(" ");
+                System.out.println("Trip " + tripNumber);
 
-            System.out.print("Date: ");
-            System.out.print(resultSet.getString("Date"));
-            System.out.print(" ");
+                System.out.print("StartLocation: ");
+                System.out.print(resultSet.getString("StartLocationName"));
+                System.out.print(" ");
 
-            System.out.print("ScheduledStartTime: ");
-            System.out.print(resultSet.getString("ScheduledStartTime"));
-            System.out.print(" ");
+                System.out.print("DestinationName: ");
+                System.out.print(resultSet.getString("DestinationName"));
+                System.out.print(" ");
 
-            System.out.print("ScheduledArrivalTime: ");
-            System.out.print(resultSet.getString("ScheduledArrivalTime"));
-            System.out.print(" ");
+                System.out.print("Date: ");
+                System.out.print(resultSet.getString("Date"));
+                System.out.print(" ");
 
-            System.out.print("Drivername: ");
-            System.out.print(resultSet.getString("Drivername"));
-            System.out.print(" ");
+                System.out.print("ScheduledStartTime: ");
+                System.out.print(resultSet.getString("ScheduledStartTime"));
+                System.out.print(" ");
 
-            System.out.print("BusID:");
-            System.out.print(resultSet.getString("BusID"));
-            System.out.print(" ");
+                System.out.print("ScheduledArrivalTime: ");
+                System.out.print(resultSet.getString("ScheduledArrivalTime"));
+                System.out.print(" ");
 
-            System.out.println();
-            tripNumber++;
+                System.out.print("Drivername: ");
+                System.out.print(resultSet.getString("Drivername"));
+                System.out.print(" ");
+
+                System.out.print("BusID:");
+                System.out.print(resultSet.getString("BusID"));
+                System.out.print(" ");
+
+                System.out.println();
+                tripNumber++;
+            }
+
+            System.out.println("Would you like to view more trips from a start loc, destination, and date? (Y/N)");
+            String userResponse = scanner.nextLine();
+            if (userResponse.contains("N")) {
+                shouldRepeat = false;
+            }
         }
     }
 
     // #2: Delete trip by specified Trip #
-    public static void deleteTrip(String tripNumber) throws SQLException {
+    public static void deleteTrip() throws SQLException {
         Connection con = getConnection();
-        String query = "DELETE FROM school.Trip WHERE TripNumber = " + tripNumber;
-        PreparedStatement stmt = con.prepareStatement(query);
-        stmt.execute(query);
 
-        System.out.println("Deleted Trip from Trip #" + tripNumber);
+        Scanner scanner = new Scanner(System.in);
+
+        boolean shouldRepeat = true;
+        while (shouldRepeat) {
+
+            System.out.print("Please enter a trip number to delete: ");
+            String tripNumber = scanner.nextLine();
+            String query = "DELETE FROM school.Trip WHERE TripNumber = " + tripNumber;
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.execute(query);
+
+            System.out.println("Deleted Trip from Trip #" + tripNumber);
+
+            System.out.println("Would you like to delete another trip? (Y/N)");
+            String userResponse = scanner.nextLine();
+            if (userResponse.contains("N")) {
+                shouldRepeat = false;
+            }
+        }
     }
 
     public static void insertTripOffering() throws SQLException {
